@@ -30,4 +30,29 @@
         return student.passed? "VG":"IG";
       }
     
-    
+  /*
+    3. Variabelnamn är viktiga. Kika igenom följande kod och gör om och rätt.
+    Det finns flera code smells att identifiera här. Vissa är lurigare än andra.
+    */
+  
+    class Temp {
+        constructor(
+            public location: string, 
+            public date: Date, 
+            public temperature: number
+        ) {}
+      }
+      
+      function averageWeeklyTemperature(localTemp: Temp[]) {
+        let totalTemp = 0;
+      
+        for (let i = 0; i < localTemp.length; i++) 
+          if (localTemp[i].location === "Stockholm") {
+            if (localTemp[i].date.getTime() > Date.now() - 604800000) {
+              totalTemp += localTemp[i].temperature;
+            }
+          
+        }
+      
+        return totalTemp / 7;
+      }
