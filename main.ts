@@ -62,18 +62,42 @@
     Se om du kan göra det bättre. Inte bara presentationen räknas, även strukturer.
     */
   
-    function showProduct(
-        { name, price, amount, description, image}: {name: string, price: number, amount: number, description: string, image: string },
-        parent: HTMLElement
-    ) {
-        const container = document.createElement("div");
 
-        container.innerHTML = `
-        <h4>${name}</h4>
-        <img src="${image}" alt=${name}" />
-        <strong>${price}</strong>
-        `;
-    parent.appendChild(container);
+    class Product {
+        name: string;
+        price: number;
+        amount: number;
+        description: string;
+        image: string;
+
+        constructor(name: string, price: number, amount: number, description: string, image: string){
+            this.name = name;
+            this.price = price;
+            this.amount = amount;
+            this.description = description;
+            this.image = image;
+        }
+
+        show(parent: HTMLElement) {
+            const container = document.createElement("div");
+
+            const title = document.createElement("h4");
+            title.innerHTML = this.name;
+
+            const img = document.createElement("img");
+            img.src = this.image;
+            img.alt = this.name;
+
+            const priceElement = document.createElement("strong");
+            priceElement.innerHTML = this.price.toString();
+
+            container.appendChild(title);
+            container.appendChild(img);
+            container.appendChild(priceElement);
+
+            parent.appendChild(container);
+            
+        }
     }
 
 
@@ -90,7 +114,7 @@
     function createCheckbox(checked: boolean): HTMLInputElement {
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.checked = checked; //Finns det bättre sätt för att se om den är true eller false? 
+        checkbox.checked = checked; //Finns det bättre sätt för att se om den är true eller false? Kolla igen
         return checkbox;
     }
 
@@ -111,6 +135,43 @@
         passedStudents.forEach(student => appendStudentToList(student, "passedstudents"));
         failedStudents.forEach(student => appendStudentToList(student, "failedstudents"));
     }
+
+    /*6. Skriv en funktion som skall slå ihop följande texter på ett bra sätt:
+    Lorem, ipsum, dolor, sit, amet
+    Exemplet under löser problemet, men inte speciellt bra. Hur kan man göra istället?
+    */
+  function concatenateStrings() {
+    return["Lorem", "ipsum", "dolor", "sit", "amet"].join(" "); //.join() för strings, istället för +. Men behövs det? Mellanslag istället för ,
+  }
+
+  /* 
+  7. Denna funktion skall kontrollera att en användare är över 20 år och göra någonting.
+      Det finns dock problem med denna typ av funktion. Vad händer när kraven ändras och
+      fler och fler parametrar behöver läggas till? T.ex. avatar eller adress. Hitta en bättre
+      lösning som är hållbar och skalar bättre. 
+  */
+
+      type User = {
+        name: string;
+        birthday: Date;
+        email: string;
+        password: string; //Här kan fler parametrar läggas till, såsom avatar?. eller adress?.
+      };
+
+      function createUser(user: User) {
+        const today = new Date();
+        let age = today.getFullYear() - user.birthday.getFullYear();
+        const monthDiff = today.getMonth() - user.birthday.getMonth();
+
+        if(monthDiff < 0 || (monthDiff === 0 && today.getDate() < user.birthday.getDate())) {
+            age--;
+        }
+
+        if (age < 20) {
+            return "Du är under 2o år";
+        }
+      }
+
 
 
 
