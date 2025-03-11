@@ -4,12 +4,8 @@
   dessa hopplängder.
   */
 
-  function getLength(jumpings: number[]): number {
-    let total = 0;
-    for (const jump of jumpings) {
-        total += jump;
-    }
-    return total;
+  function getLength(jumps: number[]): number {
+    return jumps.reduce((totalLength, jump) => totalLength + jump, 0);
   }
 
   /*
@@ -36,26 +32,18 @@
     */
   
     class Temp {
-        constructor(
-            public location: string, 
-            public date: Date, 
-            public temperature: number
-        ) {}
-      }
+      constructor(public city: string, public date: Date, public temperature: number) {}
+    }
+    
+    function averageWeeklyTemperature(temps: Temp[]): number {
+      const filteredTemps = temps.filter(temp => 
+        temp.city === "Stockholm" && temp.date.getTime() > Date.now() - 604800000
+      );
       
-      function averageWeeklyTemperature(localTemp: Temp[]) {
-        let totalTemp = 0;
+      const totalTemperature = filteredTemps.reduce((sum, temp) => sum + temp.temperature, 0);
       
-        for (let i = 0; i < localTemp.length; i++) 
-          if (localTemp[i].location === "Stockholm") {
-            if (localTemp[i].date.getTime() > Date.now() - 604800000) {
-              totalTemp += localTemp[i].temperature;
-            }
-          
-        }
-      
-        return totalTemp / 7;
-      }
+      return filteredTemps.length > 0 ? totalTemperature / filteredTemps.length : 0;
+    }
 
   /*
     4. Följande funktion kommer att presentera ett objekt i dom:en. 
@@ -63,41 +51,26 @@
     */
   
 
-    class Product {
-        name: string;
-        price: number;
-        amount: number;
-        description: string;
-        image: string;
-
-        constructor(name: string, price: number, amount: number, description: string, image: string){
-            this.name = name;
-            this.price = price;
-            this.amount = amount;
-            this.description = description;
-            this.image = image;
-        }
-
-        show(parent: HTMLElement) {
-            const container = document.createElement("div");
-
-            const title = document.createElement("h4");
-            title.innerHTML = this.name;
-
-            const img = document.createElement("img");
-            img.src = this.image;
-            img.alt = this.name;
-
-            const priceElement = document.createElement("strong");
-            priceElement.innerHTML = this.price.toString();
-
-            container.appendChild(title);
-            container.appendChild(img);
-            container.appendChild(priceElement);
-
-            parent.appendChild(container);
-            
-        }
+    function showProduct(
+      name: string,
+      price: number,
+      amount: number,
+      description: string,
+      image: string,
+      parent: HTMLElement
+    ) {
+      const productHTML = `
+        <div class="product">
+          <h4>${name}</h4>
+          <img src="${image}" alt="${name}" />
+          <strong>${price.toFixed(2)} SEK</strong>
+          <p>${description}</p>
+          <p>Amount: ${amount}</p>
+        </div>
+      `;
+    
+      // Lägg till produkten som en del av parent-elementet
+      parent.innerHTML += productHTML;
     }
 
 
@@ -106,36 +79,37 @@
     går att göra betydligt bättre. Gör om så många som du kan hitta!
     */
     
-    interface Student { //Interface för att kunna återanvända kod
-        name: string;
-        handedInOnTime: boolean;
-    }
-
-    function createCheckbox(checked: boolean): HTMLInputElement {
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = checked; //Finns det bättre sätt för att se om den är true eller false? Kolla igen
-        return checkbox;
-    }
-
-    function appendStudentToList(student: Student, listId: string) {
-        const container = document.createElement("div");
-        const checkbox = createCheckbox(student.handedInOnTime);
-
-        container.appendChild(checkbox);
-        const list = document.querySelector<HTMLUListElement>(`ul#${listId}`); // Göra det bättre? Kolla tidigare kod
-        list?.appendChild(container);
-
-    }
-
     function presentStudents(students: Student[]) {
-        const passedStudents = students.filter(student => student.handedInOnTime);
-        const failedStudents = students.filter(student => !student.handedInOnTime);
-
-        passedStudents.forEach(student => appendStudentToList(student, "passedstudents"));
-        failedStudents.forEach(student => appendStudentToList(student, "failedstudents"));
+      
+      const passedList = document.querySelector("ul#passedstudents");
+      const failedList = document.querySelector("ul#failedstudents");
+    
+      
+      let passedHTML = '';
+      let failedHTML = '';
+    
+      for (const student of students) {
+        const checkboxHTML = `<input type="checkbox" ${student.handedInOnTime ? 'checked' : ''} />`;
+        
+        const studentHTML = `<li>${checkboxHTML}</li>`;
+    
+        if (student.handedInOnTime) {
+          passedHTML += studentHTML;
+        } else {
+          failedHTML += studentHTML;
+        }
+      }
+    
+      
+      if (passedList) {
+        passedList.innerHTML = passedHTML;
+      }
+    
+      if (failedList) {
+        failedList.innerHTML = failedHTML;
+      }
     }
-
+    
     /*6. Skriv en funktion som skall slå ihop följande texter på ett bra sätt:
     Lorem, ipsum, dolor, sit, amet
     Exemplet under löser problemet, men inte speciellt bra. Hur kan man göra istället?
@@ -151,27 +125,62 @@
       lösning som är hållbar och skalar bättre. 
   */
 
-      type User = {
+      class User {
         name: string;
         birthday: Date;
         email: string;
-        password: string; //Här kan fler parametrar läggas till, såsom avatar?. eller adress?.
-      };
-
-      function createUser(user: User) {
-        const today = new Date();
-        let age = today.getFullYear() - user.birthday.getFullYear();
-        const monthDiff = today.getMonth() - user.birthday.getMonth();
-
-        if(monthDiff < 0 || (monthDiff === 0 && today.getDate() < user.birthday.getDate())) {
-            age--;
-        }
-
-        if (age < 20) {
-            return "Du är under 2o år";
+        password: string;
+        avatar?: string;  // En till parameter som kan läggas till
+        address?: string; // En till parameter som nu kan läggas till
+      
+        constructor(name: string, birthday: Date, email: string, password: string, avatar?: string, address?: string) {
+          this.name = name;
+          this.birthday = birthday;
+          this.email = email;
+          this.password = password;
+          this.avatar = avatar;
+          this.address = address;
         }
       }
-
+      
+      function validateUser(user: User): string | null {
+        // Åldersvalidering
+        const userAge = calculateAge(user.birthday);
+        if (userAge < 20) {
+          return "Du är under 20 år";
+        }
+      
+        // Här kan vi lägga till fler valideringar i framtiden, t.ex. e-post eller lösenordsstyrka
+        
+        return null;
+      }
+      
+      function calculateAge(birthday: Date): number {
+        const ageDiff = Date.now() - birthday.getTime();
+        const ageDate = new Date(ageDiff);
+        return Math.abs(ageDate.getUTCFullYear() - 1970);
+      }
+      
+      function createUser(user: User): string {
+        // Validera användaren
+        const validationError = validateUser(user);
+        if (validationError) {
+          return validationError;
+        }
+      
+        // Logik för att skapa en användare
+        console.log("Användaren har skapats");
+        return "Användare skapad";
+      }
+      
+      // Användningsexempel:
+      const newUser = new User("John Doe", new Date("2000-01-01"), "john.doe@example.com", "securePassword123");
+      
+      const result = createUser(newUser);
+      console.log(result); // "Användaren har skapats"
+      
+      
+  
 
 
 
